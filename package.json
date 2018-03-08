@@ -1,10 +1,10 @@
 {
-  "name": "probot-pr-deployment-trigger",
+  "name": "probot-deployment-listener",
   "version": "1.0.0",
   "description": "",
   "author": "Richard Macklin <1863540+rmacklin@users.noreply.github.com>",
   "license": "ISC",
-  "repository": "https://github.com/rmacklin/probot-pr-deployment-trigger.git",
+  "repository": "https://github.com/rmacklin/probot-deployment-listener.git",
   "scripts": {
     "start": "probot run ./index.js",
     "test": "jest && standard"

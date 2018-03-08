@@ -1,9 +1,9 @@
-# probot-pr-deployment-trigger
+# probot-deployment-listener
 
-> a GitHub App built with [probot](https://github.com/probot/probot) that triggers
-review app [deployments] when PRs are opened.
+> a GitHub App built with [probot](https://github.com/probot/probot) that listens
+to [GitHub deployment] creations and initiates real-life deployments.
 
-[deployments]: https://developer.github.com/v3/repos/deployments/
+[GitHub deployment]: https://developer.github.com/v3/repos/deployments/
 
 ## Setup
 
