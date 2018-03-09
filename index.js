@@ -12,7 +12,7 @@ module.exports = (robot) => {
 
   app.post('/update_deployment_status', async (req, res) => {
     const { appInstallationId, deployment, deploymentStatus, logsPort, subdomain } = req.body;
-    const deploymentLogURL = `http://ec2-18-219-211-124.us-east-2.compute.amazonaws.com:${logsPort}`;
+    const deploymentLogURL = `http://whosecase.com:${logsPort}`;
 
     const { deploymentEnvironmentURL, description } =
       deploymentStatus === 'success' ?
@@ -47,11 +47,10 @@ module.exports = (robot) => {
     async context => {
       const octokit = context.github;
       const payload = context.payload;
-      const logUrl = 'http://ec2-18-219-211-124.us-east-2.compute.amazonaws.com:32770/';
 
       const makeShardPayload = {
         appInstallationId: payload.installation.id,
-        callbackUrl: 'http://localhost:3000/deployment_listener/update_deployment_status',
+        callbackUrl: 'http://whosecase.com:1337/deployment_listener/update_deployment_status',
         deployment: {
           owner: payload.repository.owner.login,
           repo: payload.repository.name,
@@ -62,20 +61,10 @@ module.exports = (robot) => {
       }
 
       robot.log("The request we'll make to the deployer:");
-      // fetch(
-      //   'http://localhost:4000/shard',
-      //   {
-      //     method: 'POST',
-      //     body: JSON.stringify(makeShardPayload),
-      //     headers: {
-      //       'Content-Type': 'application/json'
-      //     }
-      //   }
-      // )
       robot.log(
         `
       fetch(
-        'http://localhost:4000/shard',
+        'http://localhost:3000/shard',
         {
           method: 'POST',
           body: JSON.stringify(${JSON.stringify(makeShardPayload)}),
@@ -86,12 +75,22 @@ module.exports = (robot) => {
       )
         `
       );
+      fetch(
+        'http://localhost:3000/shard',
+        {
+          method: 'POST',
+          body: JSON.stringify(makeShardPayload),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      )
 
       robot.log('Example callback request:');
       robot.log(
         `
         fetch(
-          'http://localhost:3000/deployment_listener/update_deployment_status',
+          'http://whosecase.com:1337/deployment_listener/update_deployment_status',
           {
             method: 'POST',
             body: JSON.stringify({
