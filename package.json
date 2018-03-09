@@ -10,6 +10,7 @@
     "test": "jest && standard"
   },
   "dependencies": {
+    "node-fetch": "^2.1.1",
     "probot": "^6.0.0"
   },
   "devDependencies": {
