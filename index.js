@@ -16,7 +16,7 @@ module.exports = (robot) => {
 
     const { deploymentEnvironmentURL, description } =
       deploymentStatus === 'success' ?
-        { deploymentEnvironmentURL: `https://${subdomain}.whosecase.com`,
+        { deploymentEnvironmentURL: `http://${subdomain}.whosecase.com/home/trial_signup`,
           description: `Review App Deployer successfully deployed ${subdomain}` } :
         { deploymentEnvironmentURL: null,
           description: `Review App Deployer received request to deploy ${subdomain}` };
