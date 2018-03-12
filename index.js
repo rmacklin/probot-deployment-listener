@@ -50,7 +50,7 @@ module.exports = (robot) => {
 
       const createReviewAppPayload = {
         appInstallationId: payload.installation.id,
-        callbackUrl: 'http://whosecase.com:1337/deployment_listener/update_deployment_status',
+        callbackUrl: `${process.env.PROBOT_INSTANCE_URL}/deployment_listener/update_deployment_status`,
         deployment: {
           owner: payload.repository.owner.login,
           repo: payload.repository.name,
@@ -90,7 +90,7 @@ module.exports = (robot) => {
       robot.log(
         `
         fetch(
-          'http://whosecase.com:1337/deployment_listener/update_deployment_status',
+          '${process.env.PROBOT_INSTANCE_URL}/deployment_listener/update_deployment_status',
           {
             method: 'POST',
             body: JSON.stringify({
