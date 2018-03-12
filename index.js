@@ -12,11 +12,16 @@ module.exports = (robot) => {
 
   app.post('/update_deployment_status', async (req, res) => {
     const { appInstallationId, deployment, deploymentStatus, logsPort, subdomain } = req.body;
+
+    // TODO: use https://github.com/getsentry/probot-config and get these from in-repo config
     const deploymentLogURL = `http://whosecase.com:${logsPort}`;
+    const scheme = 'http';
+    const host = 'whosecase.com';
+    const path = 'home/trial_signup';
 
     const { deploymentEnvironmentURL, description } =
       deploymentStatus === 'success' ?
-        { deploymentEnvironmentURL: `http://${subdomain}.whosecase.com/home/trial_signup`,
+        { deploymentEnvironmentURL: `${scheme}://${subdomain}.${host}/${path}`,
           description: `Review App Deployer successfully deployed ${subdomain}` } :
         { deploymentEnvironmentURL: null,
           description: `Review App Deployer received request to deploy ${subdomain}` };
@@ -48,6 +53,9 @@ module.exports = (robot) => {
       const octokit = context.github;
       const payload = context.payload;
 
+    // TODO: use https://github.com/getsentry/probot-config and get this from in-repo config
+    const createReviewAppURL = 'http://localhost:3000/shard';
+
       const createReviewAppPayload = {
         appInstallationId: payload.installation.id,
         callbackUrl: `${process.env.PROBOT_INSTANCE_URL}/deployment_listener/update_deployment_status`,
@@ -64,7 +72,7 @@ module.exports = (robot) => {
       robot.log(
         `
       fetch(
-        'http://localhost:3000/shard',
+        '${createReviewAppURL}',
         {
           method: 'POST',
           body: JSON.stringify(${JSON.stringify(createReviewAppPayload)}),
@@ -76,7 +84,7 @@ module.exports = (robot) => {
         `
       );
       fetch(
-        'http://localhost:3000/shard',
+        createReviewAppURL,
         {
           method: 'POST',
           body: JSON.stringify(createReviewAppPayload),
