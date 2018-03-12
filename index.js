@@ -48,7 +48,7 @@ module.exports = (robot) => {
       const octokit = context.github;
       const payload = context.payload;
 
-      const makeShardPayload = {
+      const createReviewAppPayload = {
         appInstallationId: payload.installation.id,
         callbackUrl: 'http://whosecase.com:1337/deployment_listener/update_deployment_status',
         deployment: {
@@ -67,7 +67,7 @@ module.exports = (robot) => {
         'http://localhost:3000/shard',
         {
           method: 'POST',
-          body: JSON.stringify(${JSON.stringify(makeShardPayload)}),
+          body: JSON.stringify(${JSON.stringify(createReviewAppPayload)}),
           headers: {
             'Content-Type': 'application/json'
           }
@@ -79,7 +79,7 @@ module.exports = (robot) => {
         'http://localhost:3000/shard',
         {
           method: 'POST',
-          body: JSON.stringify(makeShardPayload),
+          body: JSON.stringify(createReviewAppPayload),
           headers: {
             'Content-Type': 'application/json'
           }
@@ -95,7 +95,7 @@ module.exports = (robot) => {
             method: 'POST',
             body: JSON.stringify({
               appInstallationId: ${payload.installation.id},
-              deployment: ${JSON.stringify(makeShardPayload.deployment)},
+              deployment: ${JSON.stringify(createReviewAppPayload.deployment)},
               deploymentStatus: 'pending',
               logsPort: 327701,
               subdomain: '${payload.deployment.environment}'
