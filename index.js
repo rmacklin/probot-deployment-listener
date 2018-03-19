@@ -62,6 +62,7 @@ module.exports = (robot) => {
         deployment: {
           owner: payload.repository.owner.login,
           repo: payload.repository.name,
+          task: payload.deployment.task,
           id: payload.deployment.id
         },
         sha: payload.deployment.sha,
