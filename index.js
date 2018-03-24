@@ -1,5 +1,33 @@
+const crypto = require('crypto');
+const querystring = require('querystring');
+const sshpk = require('sshpk');
 const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
+const { findPrivateKey } = require('probot/lib/private-key');
+
+const privateKey = sshpk.parsePrivateKey(findPrivateKey(), 'pem');
+
+function createCallbackToken(appInstallationId, deployment, sha, subdomain) {
+  const payload = JSON.stringify({
+    appInstallationId,
+    deployment,
+    sha,
+    subdomain,
+  });
+  const sign = privateKey.createSign('sha256');
+  sign.update(payload);
+  const signature = sign.sign();
+  return `${payload}--${signature.toBuffer().toString('hex')}`;
+}
+
+function verifyCallbackToken(token) {
+  const [payload, hexSignature] = token.split('--');
+  const signature = sshpk.parseSignature(Buffer.from(hexSignature, 'hex'), 'rsa', 'asn1');
+  const verify = privateKey.createVerify('sha256');
+  verify.update(payload);
+  const valid = verify.verify(signature);
+  return valid ? JSON.parse(payload) : null;
+}
 
 module.exports = (robot) => {
   const app = robot.route('/deployment_listener');
@@ -11,8 +39,14 @@ module.exports = (robot) => {
   });
 
   app.post('/update_deployment_status', async (req, res) => {
-    const { appInstallationId, deployment, deploymentStatus, logsPort, subdomain } = req.body;
-
+    const tokenPayload = verifyCallbackToken(req.query.token);
+    if (!tokenPayload) {
+      robot.log('Received invalid token');
+      res.status(401).send('Invalid token');
+      return;
+    }
+    const { appInstallationId, deployment, subdomain } = tokenPayload;
+    const { deploymentStatus, logsPort } = req.body;
     // TODO: use https://github.com/getsentry/probot-config and get these from in-repo config
     const deploymentLogURL = `http://whosecase.com:${logsPort}`;
     const scheme = 'http';
@@ -56,15 +90,24 @@ module.exports = (robot) => {
     // TODO: use https://github.com/getsentry/probot-config and get this from in-repo config
     const createReviewAppURL = 'http://localhost:3000/shard';
 
-      const createReviewAppPayload = {
-        appInstallationId: payload.installation.id,
-        callbackUrl: `${process.env.PROBOT_INSTANCE_URL}/deployment_listener/update_deployment_status`,
-        deployment: {
+      const callbackToken = createCallbackToken(
+        payload.installation.id,
+        {
           owner: payload.repository.owner.login,
           repo: payload.repository.name,
-          task: payload.deployment.task,
           id: payload.deployment.id
         },
+        payload.deployment.sha,
+        payload.deployment.environment
+      );
+
+      const callbackPath = '/deployment_listener/update_deployment_status';
+      const callbackQueryString = querystring.stringify({ token: callbackToken });
+      const callbackUrl = `${process.env.PROBOT_INSTANCE_URL}${callbackPath}?${callbackQueryString}`;
+
+      const createReviewAppPayload = {
+        callbackUrl,
+        task: payload.deployment.task,
         sha: payload.deployment.sha,
         subdomain: payload.deployment.environment
       }
@@ -99,15 +142,12 @@ module.exports = (robot) => {
       robot.log(
         `
         fetch(
-          '${process.env.PROBOT_INSTANCE_URL}/deployment_listener/update_deployment_status',
+          '${callbackUrl}',
           {
             method: 'POST',
             body: JSON.stringify({
-              appInstallationId: ${payload.installation.id},
-              deployment: ${JSON.stringify(createReviewAppPayload.deployment)},
               deploymentStatus: 'pending',
               logsPort: 327701,
-              subdomain: '${payload.deployment.environment}'
             }),
             headers: {
               'Content-Type': 'application/json'
