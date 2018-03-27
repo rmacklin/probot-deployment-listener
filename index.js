@@ -41,7 +41,7 @@ module.exports = (robot) => {
     const tokenPayload = verifyCallbackToken(req.query.token);
     if (!tokenPayload) {
       robot.log('Received invalid token');
-      res.status(401).send('Invalid token');
+      res.status(401).json({ error: 'Invalid token' });
       return;
     }
     const { appInstallationId, deployment, subdomain } = tokenPayload;
