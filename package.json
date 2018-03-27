@@ -12,7 +12,8 @@
   "dependencies": {
     "body-parser": "^1.18.2",
     "node-fetch": "^2.1.1",
-    "probot": "^6.0.0"
+    "probot": "^6.0.0",
+    "sshpk": "^1.14.1"
   },
   "devDependencies": {
     "jest": "^21.2.1",
